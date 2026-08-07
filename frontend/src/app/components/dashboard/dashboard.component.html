@@ -1,0 +1,198 @@
+<div class="dashboard-page">
+  <!-- Top Dashboard Controls Header -->
+  <div class="dashboard-header">
+    <div class="header-titles">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Resumen de control e inventario farmacéutico</p>
+    </div>
+
+    <div class="header-controls">
+      <!-- Period Selector Segment -->
+      <div class="period-segmented">
+        <button [class.active]="selectedPeriod === 'Día'" (click)="setPeriod('Día')">Día</button>
+        <button [class.active]="selectedPeriod === 'Semana'" (click)="setPeriod('Semana')">Semana</button>
+        <button [class.active]="selectedPeriod === 'Mes'" (click)="setPeriod('Mes')">Mes</button>
+        <button [class.active]="selectedPeriod === 'Año'" (click)="setPeriod('Año')">Año</button>
+      </div>
+
+      <!-- Date Navigator Pill -->
+      <div class="date-navigator">
+        <button class="nav-arrow" (click)="navigateDate(-1)" title="Anterior {{ selectedPeriod }}">
+          <i class="pi pi-chevron-left"></i>
+        </button>
+        <span class="date-text" (click)="resetDateToToday()" title="Hacer clic para volver a hoy">
+          {{ currentDate | date:'dd MMMM yyyy':'es-PE' }}
+        </span>
+        <button class="nav-arrow" (click)="navigateDate(1)" title="Siguiente {{ selectedPeriod }}">
+          <i class="pi pi-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric Cards Row (4 Cards matching mockup style) -->
+  <div class="metrics-grid">
+    <!-- Card 1: Total Productos -->
+    <div class="metric-card">
+      <div class="icon-circle circle-teal">
+        <i class="pi pi-box"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Total Productos</span>
+        <span class="metric-value">{{ totalProductos }}</span>
+      </div>
+    </div>
+
+    <!-- Card 2: Stock Físico -->
+    <div class="metric-card">
+      <div class="icon-circle circle-amber">
+        <i class="pi pi-database"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Stock Total</span>
+        <span class="metric-value">{{ totalStock | number }}</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Stock Bajo -->
+    <div class="metric-card">
+      <div class="icon-circle circle-blue">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Stock Bajo</span>
+        <span class="metric-value">{{ stockBajoProductos.length }}</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Por Vencer / Vencidos -->
+    <div class="metric-card">
+      <div class="icon-circle circle-rose">
+        <i class="pi pi-clock"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Por Vencer / Vencidos</span>
+        <span class="metric-value">{{ vencimientoProductos.length + vencidosProductos.length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle Grid Section (Chart & Purchase Summary) -->
+  <div class="middle-grid">
+    <!-- Main Inventory Trend Chart Card -->
+    <div class="dashboard-card chart-card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Resumen de Inventario</h2>
+          <span class="card-subtitle">Evolución mensual de unidades de stock</span>
+        </div>
+        <div class="header-stat">
+          <span class="stat-meta">Stock Actual</span>
+          <span class="stat-number">S/. {{ (totalStock * 5.5) | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="chart-body">
+        <p-chart type="line" [data]="chartData" [options]="chartOptions" height="260px"></p-chart>
+      </div>
+    </div>
+
+    <!-- Right Side Purchases & Stock Summary Card -->
+    <div class="dashboard-card summary-card">
+      <div class="card-header">
+        <h2 class="card-title">Resumen de Compras</h2>
+        <span class="badge-tag">Hoy</span>
+      </div>
+      <div class="summary-list">
+        <div class="summary-item">
+          <div class="item-icon-box">
+            <i class="pi pi-shopping-cart"></i>
+          </div>
+          <div class="item-details">
+            <span class="item-label">Órdenes Registradas</span>
+            <span class="item-value">{{ totalComprasCount }} compras</span>
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <div class="item-icon-box">
+            <i class="pi pi-credit-card"></i>
+          </div>
+          <div class="item-details">
+            <span class="item-label">Monto Invertido</span>
+            <span class="item-value">S/. {{ montoTotalCompras | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="summary-item">
+          <div class="item-icon-box">
+            <i class="pi pi-truck"></i>
+          </div>
+          <div class="item-details">
+            <span class="item-label">Estado de Caducidad</span>
+            <span class="item-value text-rose" *ngIf="vencidosProductos.length > 0">
+              {{ vencidosProductos.length }} producto(s) vencido(s)
+            </span>
+            <span class="item-value text-emerald" *ngIf="vencidosProductos.length === 0">
+              Sin productos vencidos
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-footer">
+        <button class="btn-secondary-full" (click)="goTo('/compra')">
+          <i class="pi pi-plus"></i> Registrar Nueva Compra
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Table Card: Recent Products & Inventory -->
+  <div class="dashboard-card table-card">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">Productos en Inventario</h2>
+        <span class="card-subtitle">Listado reciente de productos almacenados</span>
+      </div>
+      <button class="btn-link" (click)="goTo('/productos')">
+        Ver todos los productos <i class="pi pi-arrow-right"></i>
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th>Presentación</th>
+            <th>Lote</th>
+            <th>Vencimiento</th>
+            <th class="text-right">Stock</th>
+            <th>Estado</th>
+            <th class="text-right">Precio Venta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of recentProducts">
+            <td class="font-mono text-muted">{{ p.codigo }}</td>
+            <td class="font-semibold text-dark">{{ p.nombre }}</td>
+            <td>{{ p.presentacion || '-' }}</td>
+            <td><span class="badge-gray">{{ p.lote }}</span></td>
+            <td>{{ p.fechaVencimiento | date:'dd/MM/yyyy' }}</td>
+            <td class="text-right font-bold">{{ p.stockActual }}</td>
+            <td>
+              <span [class]="getStatusClass(p)">
+                {{ getStatusText(p) }}
+              </span>
+            </td>
+            <td class="text-right font-semibold">S/. {{ p.precioVenta | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="recentProducts.length === 0">
+            <td colspan="8" class="empty-cell">Cargando catálogo de productos...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+{
+  "name": "sistemainventario",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx nx run-many --targets=serve",
+    "start:frontend": "npx nx serve frontend",
+    "start:backend": "npx nx serve backend",
+    "build": "npx nx run-many --targets=build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "nx": "23.1.0",
+    "@nx/maven": "23.1.0"
+  },
+  "nx": {}
+}

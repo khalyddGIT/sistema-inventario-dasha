@@ -1,0 +1,543 @@
+<div class="proveedores-compras-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1 class="page-title">
+          <i class="pi pi-shopping-bag"></i> Gestión de Compras & Proveedores
+        </h1>
+        <p class="page-subtitle">Registro de entrada de inventario, recepción de mercadería y catálogo de distribuidores</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <p-toast position="top-right"></p-toast>
+
+    <!-- Tabs para proveedores y compras -->
+    <p-tabView>
+      <!-- Pestaña de Compras Rediseñada -->
+      <p-tabPanel header="Nueva Orden de Compra">
+        <div class="compra-layout-grid">
+
+          <!-- Columna Izquierda: Formulario & Carrito de Recepción -->
+          <div class="compra-main-column">
+
+            <!-- Card 1: Selección de Proveedor -->
+            <div class="modern-card supplier-selection-card">
+              <div class="card-header-flex">
+                <div class="card-title-group">
+                  <span class="step-pill">Paso 1</span>
+                  <h3>Seleccionar Proveedor</h3>
+                </div>
+                <button type="button" class="btn-create-supplier-link" (click)="openCreateProveedor()">
+                  <i class="pi pi-plus"></i> Nuevo Proveedor
+                </button>
+              </div>
+
+              <div class="supplier-selector-wrapper">
+                <div class="supplier-dropdown-box">
+                  <p-dropdown
+                    [options]="proveedores"
+                    [(ngModel)]="selectedProveedorId"
+                    optionLabel="nombre"
+                    optionValue="id"
+                    [style]="{ 'width': '100%' }"
+                    styleClass="modern-p-dropdown"
+                    placeholder="Busca o selecciona un proveedor registrado...">
+                    <ng-template pTemplate="item" let-item>
+                      <div class="supplier-option-item">
+                        <div class="supplier-icon-circle">
+                          <i class="pi pi-building"></i>
+                        </div>
+                        <div class="supplier-option-info">
+                          <span class="supplier-option-name">{{ item.nombre }}</span>
+                          <span class="supplier-option-sub">{{ item.contacto || 'Sin contacto' }} &bull; {{ item.telefono }}</span>
+                        </div>
+                      </div>
+                    </ng-template>
+                  </p-dropdown>
+                </div>
+
+                <!-- Supplier Summary Banner if Selected -->
+                <div class="selected-supplier-banner" *ngIf="getSelectedProveedor() as prov">
+                  <div class="banner-avatar">
+                    <i class="pi pi-building"></i>
+                  </div>
+                  <div class="banner-details">
+                    <span class="banner-name">{{ prov.nombre }}</span>
+                    <span class="banner-meta"><i class="pi pi-user"></i> Contacto: {{ prov.contacto || 'No especificado' }} &bull; <i class="pi pi-phone"></i> {{ prov.telefono }}</span>
+                    <span class="banner-address" *ngIf="prov.direccion"><i class="pi pi-map-marker"></i> {{ prov.direccion }}</span>
+                  </div>
+                  <span class="badge-active-supplier"><i class="pi pi-check"></i> Seleccionado</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Buscador Rápido de Productos & Catálogo -->
+            <div class="modern-card product-search-card">
+              <div class="card-title-group">
+                <span class="step-pill">Paso 2</span>
+                <h3>Buscar y Agregar Medicamentos</h3>
+              </div>
+
+              <div class="search-bar-flex">
+                <div class="search-input-wrapper">
+                  <i class="pi pi-search search-icon"></i>
+                  <input
+                    type="text"
+                    pInputText
+                    placeholder="Escribe el nombre o código del medicamento a comprar..."
+                    [(ngModel)]="searchTerm"
+                    (input)="filterProductos()"
+                    class="purchase-search-input" />
+                  <button class="clear-search-x" *ngIf="searchTerm" (click)="clearSearch()">
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live Product Results Grid -->
+              <div class="search-results-container" *ngIf="searchTerm">
+                <div class="results-header" *ngIf="filteredProductos.length > 0">
+                  <span>{{ filteredProductos.length }} productos encontrados</span>
+                </div>
+
+                <div class="results-grid" *ngIf="filteredProductos.length > 0">
+                  <div class="result-card-item" *ngFor="let p of filteredProductos">
+                    <div class="p-card-icon">
+                      <i class="pi pi-box"></i>
+                    </div>
+                    <div class="p-card-info">
+                      <span class="p-card-title">{{ p.nombre }}</span>
+                      <span class="p-card-sub">Código: {{ p.codigo }} &bull; Lote: {{ p.lote || '-' }}</span>
+                      <span class="p-card-cost">Costo Compra: <strong>S/. {{ p.precioCompra | number:'1.2-2' }}</strong></span>
+                    </div>
+                    <button type="button" class="btn-quick-add" (click)="quickAddProducto(p)" title="Agregar 1 unidad a la compra">
+                      <i class="pi pi-plus"></i> Agregar
+                    </button>
+                  </div>
+                </div>
+
+                <div class="empty-search-alert" *ngIf="filteredProductos.length === 0">
+                  <i class="pi pi-exclamation-circle"></i>
+                  <span>No se encontraron medicamentos con "{{ searchTerm }}"</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Productos en la Orden de Compra -->
+            <div class="modern-card purchase-cart-card">
+              <div class="card-header-flex">
+                <div class="card-title-group">
+                  <span class="step-pill">Paso 3</span>
+                  <h3>Productos en la Orden de Compra</h3>
+                </div>
+                <span class="items-count-badge" *ngIf="compra.detalles.length > 0">
+                  {{ compra.detalles.length }} medicamentos seleccionados
+                </span>
+              </div>
+
+              <div class="empty-cart-state" *ngIf="compra.detalles.length === 0">
+                <div class="empty-cart-illustration">
+                  <i class="pi pi-shopping-bag"></i>
+                </div>
+                <h4>La orden de compra está vacía</h4>
+                <p>Busca medicamentos en el paso anterior y presiona <strong>"+ Agregar"</strong> para armar la entrada de almacén.</p>
+              </div>
+
+              <div class="cart-table-wrapper" *ngIf="compra.detalles.length > 0">
+                <table class="modern-cart-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Medicamento / Producto</th>
+                      <th>Precio Costo Unit.</th>
+                      <th>Cantidad</th>
+                      <th>Subtotal (S/.)</th>
+                      <th class="text-center">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let det of compra.detalles; let i = index">
+                      <td class="row-num">{{ i + 1 }}</td>
+                      <td>
+                        <div class="item-product-flex">
+                          <div class="item-icon-sq"><i class="pi pi-box"></i></div>
+                          <div class="item-name-group">
+                            <span class="item-name">{{ det.producto.nombre }}</span>
+                            <span class="item-code">Código: {{ det.producto.codigo }}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="price-input-wrapper">
+                          <span class="currency-label">S/.</span>
+                          <input
+                            type="number"
+                            step="0.10"
+                            min="0.01"
+                            [(ngModel)]="det.precioUnitario"
+                            (change)="updateDetalle(i)"
+                            class="price-number-input" />
+                        </div>
+                      </td>
+                      <td>
+                        <div class="quantity-stepper">
+                          <button type="button" (click)="incrementCantidad(i, -1)" [disabled]="det.cantidad <= 1"><i class="pi pi-minus"></i></button>
+                          <input type="number" min="1" [(ngModel)]="det.cantidad" (change)="updateDetalle(i)" class="qty-input-box" />
+                          <button type="button" (click)="incrementCantidad(i, 1)"><i class="pi pi-plus"></i></button>
+                        </div>
+                      </td>
+                      <td class="item-total-col">
+                        S/. {{ (det.cantidad * det.precioUnitario) | number:'1.2-2' }}
+                      </td>
+                      <td class="text-center">
+                        <button type="button" class="btn-delete-row" (click)="removeDetalle(i)" title="Quitar de la compra">
+                          <i class="pi pi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Columna Derecha: Resumen Financiero Sticky -->
+          <div class="compra-sidebar-column">
+            <div class="sticky-summary-card">
+              <div class="summary-card-header">
+                <i class="pi pi-calculator"></i>
+                <h4>Resumen de Compra</h4>
+              </div>
+
+              <div class="summary-details-list">
+                <div class="summary-row">
+                  <span class="label">Proveedor</span>
+                  <span class="val-text" *ngIf="getSelectedProveedor() as p">{{ p.nombre }}</span>
+                  <span class="val-text warning" *ngIf="!getSelectedProveedor()">No seleccionado</span>
+                </div>
+
+                <div class="summary-row">
+                  <span class="label">Total de Ítems</span>
+                  <span class="val-bold">{{ compra.detalles.length }} productos</span>
+                </div>
+
+                <div class="summary-row">
+                  <span class="label">Total Unidades Recibidas</span>
+                  <span class="val-bold">{{ getTotalUnits() }} u.</span>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-row grand-total-row">
+                  <span class="total-label">Total Orden de Compra</span>
+                  <span class="total-amount">S/. {{ compra.total | number:'1.2-2' }}</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="btn-register-purchase"
+                (click)="registrarCompra()"
+                [disabled]="compra.detalles.length === 0 || loading || !selectedProveedorId">
+                <i class="pi" [class.pi-check-circle]="!loading" [class.pi-spin]="loading" [class.pi-spinner]="loading"></i>
+                <span>{{ loading ? 'Procesando Entrada...' : 'Confirmar & Registrar Compra' }}</span>
+              </button>
+
+              <div class="summary-footer-note" *ngIf="!selectedProveedorId">
+                <i class="pi pi-info-circle"></i> Selecciona un proveedor para habilitar el registro.
+              </div>
+              <div class="summary-footer-note" *ngIf="selectedProveedorId && compra.detalles.length === 0">
+                <i class="pi pi-info-circle"></i> Agrega al menos un medicamento a la orden.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </p-tabPanel>
+
+      <!-- Pestaña de Proveedores Rediseñada -->
+      <p-tabPanel header="Gestión de Proveedores">
+        <div class="proveedores-section-container">
+
+          <!-- Cards de Métricas de Proveedores -->
+          <div class="supplier-kpi-grid">
+            <div class="kpi-card kpi-purple">
+              <div class="kpi-icon"><i class="pi pi-building"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-value">{{ proveedores.length }}</span>
+                <span class="kpi-label">Total Proveedores</span>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-blue">
+              <div class="kpi-icon"><i class="pi pi-user-edit"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-value">{{ getProveedoresConContactoCount() }}</span>
+                <span class="kpi-label">Contactos Directos</span>
+              </div>
+            </div>
+
+            <div class="kpi-card kpi-emerald">
+              <div class="kpi-icon"><i class="pi pi-map-marker"></i></div>
+              <div class="kpi-info">
+                <span class="kpi-value">{{ getProveedoresConDireccionCount() }}</span>
+                <span class="kpi-label">Ubicaciones Registradas</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barra de Controles y Búsqueda de Proveedores -->
+          <div class="supplier-toolbar-card">
+            <div class="toolbar-title-group">
+              <h3>Directorio de Proveedores</h3>
+              <p>Busca, edita o registra distribuidores farmacéuticos</p>
+            </div>
+
+            <div class="toolbar-actions-flex">
+              <div class="supplier-search-pill">
+                <i class="pi pi-search"></i>
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre, contacto, teléfono..."
+                  [(ngModel)]="searchProveedorTerm"
+                  (input)="filterProveedores()" />
+                <button class="clear-btn" *ngIf="searchProveedorTerm" (click)="searchProveedorTerm = ''; filterProveedores()">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+
+              <button type="button" class="btn-create-supplier-primary" (click)="openCreateProveedor()">
+                <i class="pi pi-plus"></i> Registrar Nuevo Proveedor
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista / Tabla Rediseñada de Proveedores -->
+          <div class="supplier-table-card">
+            <p-table
+              [value]="filteredProveedores"
+              [paginator]="true"
+              [rows]="10"
+              [responsive]="true"
+              styleClass="modern-p-table p-datatable-striped">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Proveedor / Razón Social</th>
+                  <th>Contacto</th>
+                  <th>Teléfono / Celular</th>
+                  <th>Dirección Fiscal</th>
+                  <th class="text-center">Acciones</th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-prov>
+                <tr>
+                  <td>
+                    <div class="supplier-name-cell">
+                      <div class="supplier-avatar-sq">
+                        {{ prov.nombre?.substring(0, 2) | uppercase }}
+                      </div>
+                      <div class="supplier-name-details">
+                        <span class="supplier-title">{{ prov.nombre }}</span>
+                        <span class="supplier-id-badge">ID: #{{ prov.id }}</span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <div class="contact-cell" *ngIf="prov.contacto">
+                      <i class="pi pi-user text-primary"></i>
+                      <span>{{ prov.contacto }}</span>
+                    </div>
+                    <span class="badge-none" *ngIf="!prov.contacto">Sin contacto</span>
+                  </td>
+
+                  <td>
+                    <div class="phone-cell" *ngIf="prov.telefono">
+                      <i class="pi pi-phone text-emerald"></i>
+                      <a [href]="'tel:' + prov.telefono" class="phone-link">{{ prov.telefono }}</a>
+                    </div>
+                    <span class="badge-none" *ngIf="!prov.telefono">Sin teléfono</span>
+                  </td>
+
+                  <td>
+                    <div class="address-cell" *ngIf="prov.direccion">
+                      <i class="pi pi-map-marker text-indigo"></i>
+                      <span class="address-text" [title]="prov.direccion">{{ prov.direccion }}</span>
+                    </div>
+                    <span class="badge-none" *ngIf="!prov.direccion">Sin dirección</span>
+                  </td>
+
+                  <td class="text-center">
+                    <div class="table-actions-group">
+                      <button
+                        type="button"
+                        class="action-btn edit-btn"
+                        (click)="openEditProveedor(prov)"
+                        title="Editar proveedor">
+                        <i class="pi pi-pencil"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="action-btn delete-btn"
+                        (click)="deleteProveedor(prov.id)"
+                        title="Eliminar proveedor">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="5" class="text-center py-4">
+                    <div class="empty-table-state">
+                      <i class="pi pi-building text-muted"></i>
+                      <h4>No se encontraron proveedores</h4>
+                      <p *ngIf="searchProveedorTerm">No hay coincidencia para "{{ searchProveedorTerm }}".</p>
+                      <p *ngIf="!searchProveedorTerm">Presiona el botón "+ Registrar Nuevo Proveedor" para comenzar.</p>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+
+  <!-- Modal de Proveedor Rediseñado -->
+  <p-dialog
+    [(visible)]="showFormProveedor"
+    [modal]="true"
+    [style]="{ width: '560px', 'max-width': '95vw' }"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="modern-supplier-dialog"
+    (onHide)="cancelProveedor()">
+
+    <ng-template pTemplate="header">
+      <div class="dialog-header-custom">
+        <div class="dialog-header-icon">
+          <i class="pi" [class.pi-building]="!editingProveedor" [class.pi-pencil]="editingProveedor"></i>
+        </div>
+        <div class="dialog-header-text">
+          <h2>{{ editingProveedor ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+          <p>{{ editingProveedor ? 'Actualiza la información del proveedor seleccionado' : 'Ingresa los datos para registrar un proveedor farmacéutico' }}</p>
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="supplier-form-container">
+      <!-- Sección 1: Información Comercial -->
+      <div class="form-section-header">
+        <i class="pi pi-briefcase"></i>
+        <span>Información Comercial</span>
+      </div>
+
+      <div class="form-grid-2col">
+        <!-- Nombre / Razón Social -->
+        <div class="form-field-group col-span-2">
+          <label for="supplier-name">Nombre / Razón Social <span class="required-star">*</span></label>
+          <div class="input-icon-wrapper">
+            <i class="pi pi-building input-icon"></i>
+            <input
+              id="supplier-name"
+              type="text"
+              pInputText
+              [(ngModel)]="proveedorForm.nombre"
+              placeholder="Ej. Distribuidora Farmacéutica Lima S.A.C."
+              class="modern-input"
+              [class.input-error]="!proveedorForm.nombre && submittedProveedor" />
+          </div>
+          <small class="field-help error-text" *ngIf="!proveedorForm.nombre && submittedProveedor">
+            <i class="pi pi-exclamation-circle"></i> El nombre del proveedor es obligatorio.
+          </small>
+        </div>
+
+        <!-- Persona de Contacto -->
+        <div class="form-field-group col-span-2">
+          <label for="supplier-contact">Persona de Contacto</label>
+          <div class="input-icon-wrapper">
+            <i class="pi pi-user input-icon"></i>
+            <input
+              id="supplier-contact"
+              type="text"
+              pInputText
+              [(ngModel)]="proveedorForm.contacto"
+              placeholder="Ej. Juan Carlos Pérez (Gerente Ventas)"
+              class="modern-input" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 2: Datos de Contacto y Ubicación -->
+      <div class="form-section-header p-mt-4">
+        <i class="pi pi-phone"></i>
+        <span>Contacto & Ubicación</span>
+      </div>
+
+      <div class="form-grid-2col">
+        <!-- Teléfono / Celular -->
+        <div class="form-field-group col-span-2">
+          <label for="supplier-phone">Teléfono / Celular <span class="required-star">*</span></label>
+          <div class="input-icon-wrapper">
+            <i class="pi pi-phone input-icon"></i>
+            <input
+              id="supplier-phone"
+              type="text"
+              pInputText
+              [(ngModel)]="proveedorForm.telefono"
+              placeholder="Ej. (01) 456-7890 o 987654321"
+              class="modern-input"
+              [class.input-error]="!proveedorForm.telefono && submittedProveedor" />
+          </div>
+          <small class="field-help error-text" *ngIf="!proveedorForm.telefono && submittedProveedor">
+            <i class="pi pi-exclamation-circle"></i> El número de teléfono es obligatorio.
+          </small>
+        </div>
+
+        <!-- Dirección -->
+        <div class="form-field-group col-span-2">
+          <label for="supplier-address">Dirección Fiscal</label>
+          <div class="input-icon-wrapper">
+            <i class="pi pi-map-marker input-icon"></i>
+            <input
+              id="supplier-address"
+              type="text"
+              pInputText
+              [(ngModel)]="proveedorForm.direccion"
+              placeholder="Ej. Av. Javier Prado Este 1234, San Isidro, Lima"
+              class="modern-input" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-footer-actions">
+        <button
+          type="button"
+          class="btn-cancel-modern"
+          (click)="cancelProveedor()">
+          <i class="pi pi-times"></i> Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="btn-save-modern"
+          (click)="saveProveedorWithValidation()">
+          <i class="pi pi-check"></i> {{ editingProveedor ? 'Actualizar Proveedor' : 'Guardar Proveedor' }}
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

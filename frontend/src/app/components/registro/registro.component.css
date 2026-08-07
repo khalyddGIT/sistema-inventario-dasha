@@ -1,0 +1,181 @@
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #f8fafc 100%);
+}
+
+.background-gradient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 10% 30%, rgba(85, 81, 255, 0.06) 0%, transparent 50%),
+              radial-gradient(circle at 90% 70%, rgba(79, 70, 229, 0.06) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(99, 91, 255, 0.04) 0%, transparent 50%);
+  animation: float 25s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+.register-card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 500px;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  border-radius: 24px !important;
+  padding: 2.5rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08) !important;
+  animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-circle {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.25rem;
+  background: linear-gradient(135deg, var(--primary), #635bff);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 28px rgba(85, 81, 255, 0.2);
+  font-size: 1.8rem;
+  color: white;
+}
+
+.card-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--neutral-900);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+}
+
+.card-header p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.register-form .field {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.register-form label {
+  font-weight: 600;
+  color: var(--neutral-700);
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--neutral-100);
+  font-size: 0.9rem;
+}
+
+.login-link span {
+  color: var(--text-secondary);
+}
+
+.login-link .link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.25rem;
+  transition: color 0.18s ease;
+}
+
+.login-link .link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+::ng-deep .register-card .p-inputtext,
+::ng-deep .register-card .p-dropdown {
+  background: var(--surface-input) !important;
+  border: 1px solid var(--border-hover) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+::ng-deep .register-card .p-inputtext:focus,
+::ng-deep .register-card .p-dropdown:not(.p-disabled).p-focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(85, 81, 255, 0.12) !important;
+  background: var(--surface-input) !important;
+}
+
+::ng-deep .register-card .p-dropdown .p-dropdown-label {
+  color: var(--text-primary) !important;
+}
+
+::ng-deep .register-card .p-dropdown-panel {
+  background: var(--surface-card) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+::ng-deep .register-card .p-dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+::ng-deep .register-card .p-dropdown-item:hover,
+::ng-deep .register-card .p-dropdown-item.p-highlight {
+  background: var(--indigo-50) !important;
+  color: var(--primary) !important;
+}
+
+::ng-deep .register-card .p-password input {
+  width: 100%;
+}
+
+::ng-deep .register-card .p-button.p-button-success {
+  background: linear-gradient(135deg, var(--primary), #635bff) !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 14px rgba(85, 81, 255, 0.2) !important;
+  transition: all 0.25s ease !important;
+}
+
+::ng-deep .register-card .p-button.p-button-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(85, 81, 255, 0.25) !important;
+}
+
+@media (max-width: 480px) {
+  .register-card {
+    padding: 1.75rem !important;
+    border-radius: 20px !important;
+  }
+
+  .card-header h2 {
+    font-size: 1.5rem;
+  }
+}

@@ -1,0 +1,139 @@
+<div class="product-form-body">
+  <p-toast></p-toast>
+
+  <div class="form-grid">
+    <!-- Código -->
+    <div class="field-item">
+      <label class="field-label">Código del Producto <span class="text-danger">*</span></label>
+      <div class="p-inputgroup">
+        <span class="p-inputgroup-addon"><i class="pi pi-barcode"></i></span>
+        <input
+          pInputText
+          [(ngModel)]="producto.codigo"
+          name="codigo"
+          placeholder="Ej. P009"
+          required
+          (input)="onCodigoChange($any($event.target).value)" />
+        <span class="p-inputgroup-addon" *ngIf="producto.codigo && !codigoVerificando">
+          <i class="pi" [class.pi-check]="codigoValido && !codigoDuplicado" [class.pi-times]="codigoDuplicado"
+             [style.color]="codigoDuplicado ? '#ef4444' : '#10b981'"></i>
+        </span>
+      </div>
+      <small *ngIf="codigoDuplicado" class="error-text">El código ya existe. Use otro diferente.</small>
+    </div>
+
+    <!-- Nombre -->
+    <div class="field-item">
+      <label class="field-label">Nombre Comercial <span class="text-danger">*</span></label>
+      <div class="p-inputgroup">
+        <span class="p-inputgroup-addon"><i class="pi pi-box"></i></span>
+        <input pInputText [(ngModel)]="producto.nombre" name="nombre" placeholder="Ej. Paracetamol 500mg" required />
+      </div>
+    </div>
+
+    <!-- Presentación -->
+    <div class="field-item">
+      <label class="field-label">Presentación</label>
+      <input pInputText [(ngModel)]="producto.presentacion" name="presentacion" placeholder="Ej. Tabletas / Caja x 20" />
+    </div>
+
+    <!-- Lote -->
+    <div class="field-item">
+      <label class="field-label">Lote</label>
+      <input pInputText [(ngModel)]="producto.lote" name="lote" placeholder="Ej. LOTE2026A" />
+    </div>
+
+    <!-- Fecha Vencimiento -->
+    <div class="field-item">
+      <label class="field-label">Fecha Vencimiento</label>
+      <p-calendar
+        [(ngModel)]="producto.fechaVencimiento"
+        name="fechaVencimiento"
+        dateFormat="yy-mm-dd"
+        [showIcon]="true"
+        placeholder="Seleccionar fecha"
+        styleClass="w-full">
+      </p-calendar>
+    </div>
+
+    <!-- Stock Mínimo -->
+    <div class="field-item">
+      <label class="field-label">Stock Mínimo Alerta</label>
+      <p-inputNumber [(ngModel)]="producto.stockMinimo" name="stockMinimo" [min]="1" styleClass="w-full"></p-inputNumber>
+    </div>
+
+    <!-- Stock Inicial -->
+    <div class="field-item">
+      <label class="field-label">Stock Actual</label>
+      <p-inputNumber [(ngModel)]="producto.stockActual" name="stockActual" [min]="0" styleClass="w-full"></p-inputNumber>
+    </div>
+
+    <!-- Precio Compra -->
+    <div class="field-item">
+      <label class="field-label">Precio Compra (S/.) <span class="text-danger">*</span></label>
+      <p-inputNumber
+        [(ngModel)]="producto.precioCompra"
+        mode="decimal"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        [min]="0.01"
+        styleClass="w-full"
+        required>
+      </p-inputNumber>
+    </div>
+
+    <!-- Precio Venta -->
+    <div class="field-item">
+      <label class="field-label">Precio Venta (S/.) <span class="text-danger">*</span></label>
+      <p-inputNumber
+        [(ngModel)]="producto.precioVenta"
+        mode="decimal"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        [min]="0.01"
+        styleClass="w-full"
+        required>
+      </p-inputNumber>
+    </div>
+
+    <!-- Categoría -->
+    <div class="field-item">
+      <label class="field-label">Categoría <span class="text-danger">*</span></label>
+      <p-dropdown
+        [options]="categorias"
+        [(ngModel)]="selectedCategoriaId"
+        optionLabel="nombre"
+        optionValue="id"
+        placeholder="Seleccionar categoría"
+        name="categoria"
+        styleClass="w-full"
+        required>
+      </p-dropdown>
+    </div>
+
+    <!-- Laboratorio -->
+    <div class="field-item">
+      <label class="field-label">Laboratorio <span class="text-danger">*</span></label>
+      <p-dropdown
+        [options]="laboratorios"
+        [(ngModel)]="selectedLaboratorioId"
+        optionLabel="nombre"
+        optionValue="id"
+        placeholder="Seleccionar laboratorio"
+        name="laboratorio"
+        styleClass="w-full"
+        required>
+      </p-dropdown>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="dialog-actions">
+    <button type="button" class="btn-dialog-cancel" (click)="onCancel()">
+      <i class="pi pi-times"></i> Cancelar
+    </button>
+    <button type="button" class="btn-dialog-save" (click)="onSave()" [disabled]="loading">
+      <i class="pi pi-check"></i> {{ isEditing ? 'Actualizar Producto' : 'Guardar Producto' }}
+    </button>
+  </div>
+</div>

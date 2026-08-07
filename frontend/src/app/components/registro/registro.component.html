@@ -1,0 +1,102 @@
+<!-- src/app/components/registro/registro.component.html -->
+
+<div class="register-container">
+  <p-toast></p-toast>
+  <div class="background-gradient"></div>
+
+  <div class="card register-card">
+    <div class="card-header">
+      <div class="logo-circle">
+        <i class="pi pi-user-plus"></i>
+      </div>
+      <h2>Crear Cuenta</h2>
+      <p>Regístrate para comenzar a usar el sistema</p>
+    </div>
+
+    <form (ngSubmit)="registrar()" class="register-form">
+      <div class="p-fluid">
+
+        <!-- Nombre -->
+        <div class="field">
+          <label for="nombre">Nombre completo *</label>
+          <input
+            pInputText
+            id="nombre"
+            [(ngModel)]="nombre"
+            name="nombre"
+            placeholder="Juan Pérez"
+            required />
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+          <label for="email">Correo electrónico *</label>
+          <input
+            pInputText
+            id="email"
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="juan@botica.com"
+            required />
+        </div>
+
+        <!-- Rol -->
+        <div class="field">
+          <label for="role">Rol en la botica *</label>
+          <p-dropdown
+            [options]="roles"
+            [(ngModel)]="selectedRole"
+            name="role"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Selecciona tu rol"
+            [showClear]="true"
+             required>
+          </p-dropdown>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="field">
+          <label for="password">Contraseña *</label>
+          <p-password
+            [(ngModel)]="password"
+            name="password"
+            [toggleMask]="true"
+            [feedback]="true"
+            placeholder="Mínimo 6 caracteres"
+            required>
+          </p-password>
+        </div>
+
+        <!-- Confirmar contraseña -->
+        <div class="field">
+          <label for="confirm">Confirmar contraseña *</label>
+          <p-password
+            [(ngModel)]="confirmPassword"
+            name="confirmPassword"
+            [toggleMask]="true"
+            [feedback]="false"
+            required>
+          </p-password>
+        </div>
+
+        <!-- Botón -->
+        <button
+          pButton
+          type="submit"
+          label="Crear Cuenta"
+          icon="pi pi-user-plus"
+          [loading]="loading"
+          [disabled]="loading"
+          class="w-full p-button-success p-button-raised">
+        </button>
+      </div>
+    </form>
+
+    <div class="login-link">
+      <span>¿Ya tienes cuenta? </span>
+      <a href="javascript:void(0)" (click)="goToLogin()" class="link">Iniciar sesión</a>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,86 @@
+<div class="login-wrapper">
+  <div class="login-container">
+    <div class="background-gradient"></div>
+
+    <p-card class="login-card">
+      <div class="login-header">
+        <div class="logo-circle">
+          <i class="pi pi-inventory"></i>
+        </div>
+        <h1 class="title">Botica <span class="brand-dasha-login">DASHA</span></h1>
+        <p class="subtitle">Sistema de Inventario</p>
+      </div>
+
+      <p-message *ngIf="error" severity="error" [text]="error" class="custom-message"></p-message>
+      <p-message *ngIf="loading" severity="info" text="Iniciando sesión..." class="custom-message"></p-message>
+
+      <form #loginForm="ngForm" class="login-form" (keydown.enter)="onKeyPress($any($event))">
+        <div class="field-group">
+          <div class="field">
+            <label for="email"><i class="pi pi-envelope"></i> Correo electrónico</label>
+            <input
+              pInputText
+              id="email"
+              [(ngModel)]="email"
+              name="email"
+              type="email"
+              required
+              (keydown.enter)="onKeyPress($any($event))"
+              class="w-full"
+              placeholder="correo@farmacia.com"
+              autocomplete="email" />
+          </div>
+
+          <div class="field">
+            <label for="password"><i class="pi pi-lock"></i> Contraseña</label>
+            <p-password
+              [(ngModel)]="password"
+              name="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              placeholder="Ingresa tu contraseña"
+              required
+              (keydown.enter)="onKeyPress($any($event))">
+            </p-password>
+          </div>
+        </div>
+
+        <button
+          pButton
+          pRipple
+          type="submit"
+          [label]="loading ? 'Iniciando...' : 'Iniciar Sesión'"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          [loading]="loading"
+          [disabled]="loading || !email || !password"
+          class="login-button w-full"
+          (click)="!loading && login()">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          label="Ingreso rápido"
+          icon="pi pi-bolt"
+          class="p-button-outlined p-button-secondary w-full mt-2"
+          (click)="ingresoDirecto()">
+        </button>
+
+        <div class="login-links-container">
+          <a routerLink="/registro" class="register-text">¿No tienes cuenta? Regístrate</a>
+        </div>
+      </form>
+
+      <div class="login-footer">
+        <p>&copy; {{ currentYear }} Botica DASHA &bull; Todos los derechos reservados</p>
+        <div class="security-info">
+          <i class="pi pi-shield"></i>
+          <span>Conexión segura</span>
+        </div>
+      </div>
+    </p-card>
+  </div>
+</div>

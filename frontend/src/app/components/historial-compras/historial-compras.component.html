@@ -1,0 +1,153 @@
+<div class="historial-compras-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div>
+        <h1 class="page-title">
+          <i class="pi pi-history"></i> Historial de Compras
+        </h1>
+        <p class="page-subtitle">Registro completo de todas las compras al proveedor</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Barra de búsqueda -->
+    <div class="search-bar">
+      <div class="search-input">
+        <i class="pi pi-search"></i>
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar por ID, fecha, proveedor, producto..."
+          [(ngModel)]="searchTerm"
+          (input)="filterCompras()"
+          class="modern-input">
+      </div>
+    </div>
+
+    <!-- Loading skeleton -->
+    <div *ngIf="loading" class="loading-skeleton">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line long"></div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="!loading && filteredCompras.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="pi pi-inbox"></i>
+      </div>
+      <h3>No hay compras registradas</h3>
+      <p>El historial de compras aparecerá aquí una vez que se realicen compras</p>
+    </div>
+
+    <!-- Tabla de compras -->
+    <div *ngIf="!loading && filteredCompras.length > 0" class="table-container">
+      <p-table
+        [value]="filteredCompras"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} compras"
+        styleClass="modern-table"
+        responsiveLayout="scroll">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Proveedor</th>
+            <th>Contacto</th>
+            <th>Productos</th>
+            <th>Total</th>
+            <th>Detalles</th>
+            <th>Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-compra>
+          <tr class="table-row">
+            <td><span class="code-badge">#{{ compra.id }}</span></td>
+            <td>{{ compra.fecha | date:'dd/MM/yyyy' }}</td>
+            <td><strong>{{ compra.proveedor.nombre }}</strong></td>
+            <td>{{ compra.proveedor.contacto || '-' }}<br><small style="color: #666;">{{ compra.proveedor.telefono }}</small></td>
+            <td>
+              <div *ngFor="let detalle of compra.detalles" class="detalle-producto">
+                <span>{{ detalle.producto.nombre }}</span>
+                <br>
+                <small style="color: #666;">{{ detalle.cantidad }} x S/.{{ detalle.precioUnitario | number:'1.2-2' }}</small>
+              </div>
+            </td>
+            <td class="total">S/. {{ compra.total | number:'1.2-2' }}</td>
+            <td>
+              <p-button
+                icon="pi pi-list"
+                (onClick)="showDetalles(compra)"
+                styleClass="p-button-sm p-button-text p-button-info"
+                pTooltip="Ver detalles"
+                tooltipPosition="top">
+              </p-button>
+            </td>
+            <td>
+              <div class="actions">
+                <p-button
+                  icon="pi pi-trash"
+                  (onClick)="deleteCompra(compra.id!)"
+                  styleClass="p-button-rounded p-button-text p-button-danger"
+                  pTooltip="Eliminar compra"
+                  tooltipPosition="top">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <!-- Modal de detalles de compra -->
+  <p-dialog
+    header="Detalles de la Compra #{{ selectedCompra?.id }}"
+    [(visible)]="showDetallesDialog"
+    [modal]="true"
+    [style]="{ width: '70vw', 'max-width': '900px' }"
+    [closable]="true">
+
+    <div *ngIf="selectedCompra" class="detalle-content">
+      <div class="detalle-header">
+        <div class="detalle-info">
+          <h3>Proveedor: {{ selectedCompra.proveedor.nombre }}</h3>
+          <p>Contacto: {{ selectedCompra.proveedor.contacto }}</p>
+          <p>Teléfono: {{ selectedCompra.proveedor.telefono }}</p>
+          <p>Fecha: {{ selectedCompra.fecha | date:'dd/MM/yyyy' }}</p>
+          <p class="total-detalle">Total: S/. {{ selectedCompra.total | number:'1.2-2' }}</p>
+        </div>
+      </div>
+
+      <p-table [value]="selectedCompra.detalles" styleClass="detalle-table">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Producto</th>
+            <th>Código</th>
+            <th>Cantidad</th>
+            <th>Precio Unit.</th>
+            <th>Subtotal</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-detalle>
+          <tr>
+            <td>{{ detalle.producto.nombre }}</td>
+            <td>{{ detalle.producto.codigo }}</td>
+            <td>{{ detalle.cantidad }}</td>
+            <td>S/. {{ detalle.precioUnitario | number:'1.2-2' }}</td>
+            <td>S/. {{ (detalle.cantidad * detalle.precioUnitario) | number:'1.2-2' }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </p-dialog>
+</div>

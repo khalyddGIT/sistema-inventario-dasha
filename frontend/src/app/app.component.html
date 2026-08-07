@@ -1,0 +1,278 @@
+<div class="app-layout" [class.logged-in]="isLoggedIn">
+  <!-- Mobile Overlay -->
+  <div class="sidebar-overlay" *ngIf="isLoggedIn && showMenu" (click)="toggleMenu()"></div>
+
+  <!-- Left Sidebar (Adapted Collapsible Open-On-Hover Rail Architecture) -->
+  <aside
+    class="app-sidebar"
+    *ngIf="isLoggedIn"
+    [class.show-mobile]="showMenu"
+    [class.collapsed]="sidebarCollapsed"
+    [class.hover-expanded]="sidebarHoverExpanded"
+    (mouseenter)="onSidebarMouseEnter()"
+    (mouseleave)="onSidebarMouseLeave()">
+    
+    <!-- Sidebar Header Brand -->
+    <div class="sidebar-logo">
+      <div class="logo-icon-square" (click)="toggleSidebarCollapse()" [title]="sidebarCollapsed ? 'Clic para expandir menú' : 'Botica DASHA'">
+        <i class="pi pi-plus-circle"></i>
+      </div>
+      <div class="logo-text" *ngIf="!sidebarCollapsed || sidebarHoverExpanded">
+        <h3>Botica</h3>
+        <p class="brand-dasha">DASHA</p>
+      </div>
+
+      <!-- Collapse / Expand Trigger Toggle Button -->
+      <button class="collapse-toggle-btn" (click)="toggleSidebarCollapse()" [title]="sidebarCollapsed ? 'Fijar menú expandido' : 'Colapsar menú a riel (Iconos)'">
+        <i class="pi" [class.pi-chevron-left]="!sidebarCollapsed" [class.pi-chevron-right]="sidebarCollapsed"></i>
+      </button>
+
+      <button class="mobile-close-btn" (click)="toggleMenu()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <!-- Navigation Menu with Groups & Submenus -->
+    <nav class="sidebar-nav">
+      
+      <!-- Group 1: Navegación Principal -->
+      <div class="nav-group-label" *ngIf="!sidebarCollapsed || sidebarHoverExpanded">Navegación</div>
+
+      <a routerLink="/dashboard" routerLinkActive="active" (click)="showMenu = false" class="nav-item" data-tooltip="Dashboard">
+        <i class="pi pi-compass"></i>
+        <span *ngIf="!sidebarCollapsed || sidebarHoverExpanded">Dashboard</span>
+      </a>
+
+      <a routerLink="/productos" routerLinkActive="active" (click)="showMenu = false" class="nav-item" data-tooltip="Productos">
+        <i class="pi pi-box"></i>
+        <span *ngIf="!sidebarCollapsed || sidebarHoverExpanded">Productos</span>
+        <span class="nav-badge" *ngIf="(!sidebarCollapsed || sidebarHoverExpanded) && unreadCount > 0">{{ unreadCount }}</span>
+      </a>
+
+      <!-- Group 2: Gestión Farmacéutica -->
+      <div class="nav-group-label" *ngIf="(!sidebarCollapsed || sidebarHoverExpanded) && hasRole(Role.ADMIN)">Gestión</div>
+
+      <!-- Item con Submenú Desplegable: Compras & Proveedores -->
+      <div class="nav-item-has-sub" *ngIf="hasRole(Role.ADMIN)">
+        <a
+          routerLink="/compra"
+          routerLinkActive="active"
+          (click)="showMenu = false"
+          class="nav-item"
+          data-tooltip="Compras & Proveedores">
+          <i class="pi pi-shopping-bag"></i>
+          <span *ngIf="!sidebarCollapsed || sidebarHoverExpanded">Compras & Proveedores</span>
+          <button
+            type="button"
+            class="submenu-toggle-btn"
+            *ngIf="!sidebarCollapsed || sidebarHoverExpanded"
+            (click)="toggleSubMenu('compras', $event)">
+            <i class="pi" [class.pi-chevron-down]="!openSubMenu['compras']" [class.pi-chevron-up]="openSubMenu['compras']"></i>
+          </button>
+        </a>
+
+        <!-- Submenú desplegable -->
+        <div class="sidebar-submenu" *ngIf="(!sidebarCollapsed || sidebarHoverExpanded) && openSubMenu['compras']">
+          <a routerLink="/compra" (click)="showMenu = false" class="submenu-item">
+            <i class="pi pi-circle-fill sub-dot"></i>
+            <span>Nueva Compra</span>
+          </a>
+          <a routerLink="/historial-compras" (click)="showMenu = false" class="submenu-item">
+            <i class="pi pi-circle-fill sub-dot"></i>
+            <span>Historial de Compras</span>
+          </a>
+        </div>
+      </div>
+
+      <a routerLink="/historial-compras" routerLinkActive="active" (click)="showMenu = false" class="nav-item"
+         *ngIf="hasRole(Role.ADMIN)" data-tooltip="Historial Compras">
+        <i class="pi pi-history"></i>
+        <span *ngIf="!sidebarCollapsed || sidebarHoverExpanded">Historial Compras</span>
+      </a>
+
+      <!-- Group 3: Reportes & Análisis -->
+      <div class="nav-group-label" *ngIf="(!sidebarCollapsed || sidebarHoverExpanded) && hasRole(Role.ADMIN)">Análisis</div>
+
+      <a routerLink="/reportes" routerLinkActive="active" (click)="showMenu = false" class="nav-item"
+         *ngIf="hasRole(Role.ADMIN)" data-tooltip="Reportes">
+        <i class="pi pi-chart-pie"></i>
+        <span *ngIf="!sidebarCollapsed || sidebarHoverExpanded">Reportes</span>
+      </a>
+    </nav>
+
+    <!-- User Profile & Logout Footer -->
+    <div class="sidebar-footer">
+      <div class="user-profile" [attr.data-user-tooltip]="currentUser?.nombre + ' (' + currentUser?.rol + ')'">
+        <div class="avatar-circle">
+          {{ currentUser?.nombre?.substring(0, 2) | uppercase }}
+        </div>
+        <div class="user-details" *ngIf="!sidebarCollapsed || sidebarHoverExpanded">
+          <span class="username" [title]="currentUser?.nombre">{{ currentUser?.nombre }}</span>
+          <span class="role">{{ currentUser?.rol }}</span>
+        </div>
+      </div>
+      <button class="logout-btn" (click)="logout()" [title]="sidebarCollapsed ? 'Cerrar Sesión (' + currentUser?.nombre + ')' : 'Cerrar Sesión'">
+        <i class="pi pi-sign-out"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="app-content-wrapper" [class.sidebar-collapsed]="sidebarCollapsed">
+    <!-- Header Bar matching reference image (Search Input + Notifications + User Avatar) -->
+    <header class="app-header" *ngIf="isLoggedIn">
+      <div class="header-left">
+        <!-- Sidebar Trigger Button in Header (matching PrimeNG pSidebarTrigger style) -->
+        <button class="menu-toggle-btn" (click)="toggleSidebarCollapse()" [title]="sidebarCollapsed ? 'Expandir menú lateral' : 'Modo Riel (Iconos)'">
+          <i class="pi" [class.pi-bars]="!sidebarCollapsed" [class.pi-window-maximize]="sidebarCollapsed"></i>
+        </button>
+
+        <!-- Search Input Pill with Live Dropdown Popup -->
+        <div class="header-search-container">
+          <div class="header-search-pill">
+            <i class="pi pi-search"></i>
+            <input
+              type="text"
+              placeholder="Buscar productos, proveedores, lotes..."
+              [(ngModel)]="headerSearchTerm"
+              (input)="onHeaderSearch()"
+              (focus)="onHeaderSearch()" />
+            <button class="clear-search-btn" *ngIf="headerSearchTerm" (click)="headerSearchTerm = ''; onHeaderSearch()">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          <!-- Auto-Complete Live Search Dropdown -->
+          <div class="search-results-dropdown" *ngIf="showSearchDropdown && searchResults.length > 0">
+            <div class="search-dropdown-header">
+              <span>Resultados para "{{ headerSearchTerm }}"</span>
+              <span class="count-badge">{{ searchResults.length }}</span>
+            </div>
+            <div class="search-results-list">
+              <div
+                class="search-result-item"
+                *ngFor="let res of searchResults"
+                (click)="selectSearchResult(res)">
+                <div class="res-icon">
+                  <i class="pi pi-box"></i>
+                </div>
+                <div class="res-info">
+                  <span class="res-name">{{ res.nombre }}</span>
+                  <span class="res-sub">Código: {{ res.codigo }} &bull; Lote: {{ res.lote || '-' }}</span>
+                </div>
+                <div class="res-meta">
+                  <span class="res-price">S/. {{ res.precioVenta | number:'1.2-2' }}</span>
+                  <span class="res-stock" [class.danger]="res.stockActual <= 0">
+                    {{ res.stockActual }} u.
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="search-dropdown-footer" (click)="viewAllSearchResults()">
+              Ver catálogo completo en Productos <i class="pi pi-arrow-right"></i>
+            </div>
+          </div>
+
+          <div class="search-results-dropdown empty-search" *ngIf="showSearchDropdown && headerSearchTerm && searchResults.length === 0">
+            <i class="pi pi-exclamation-circle text-muted mb-1"></i>
+            <span>No se encontraron productos con "{{ headerSearchTerm }}"</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Interactive Notification Bell Button -->
+        <div class="notification-container">
+          <button class="notification-btn" (click)="toggleNotifications()" title="Ver Notificaciones">
+            <i class="pi pi-bell"></i>
+            <span class="notification-badge-count" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+          </button>
+
+          <!-- Floating Notification Panel Dropdown -->
+          <div class="notifications-dropdown-panel" *ngIf="showNotificationsPanel">
+            <div class="notif-header">
+              <div>
+                <h4>Notificaciones</h4>
+                <span class="notif-sub">{{ unreadCount }} no leídas</span>
+              </div>
+              <button class="btn-read-all" (click)="markAllNotificationsRead()" *ngIf="unreadCount > 0">
+                Marcar leídas
+              </button>
+            </div>
+
+            <div class="notif-list" *ngIf="notifications.length > 0">
+              <div
+                class="notif-item"
+                *ngFor="let notif of notifications"
+                [class.unread]="!notif.read"
+                [class.severity-danger]="notif.severity === 'danger'"
+                [class.severity-warning]="notif.severity === 'warning'"
+                (click)="onNotificationClick(notif)">
+                <div class="notif-icon">
+                  <i class="pi {{ notif.icon }}"></i>
+                </div>
+                <div class="notif-content">
+                  <span class="notif-title">{{ notif.title }}</span>
+                  <p class="notif-detail">{{ notif.detail }}</p>
+                  <span class="notif-time">{{ notif.time }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="empty-notif" *ngIf="notifications.length === 0">
+              <i class="pi pi-check-circle text-emerald"></i>
+              <p>¡Todo en orden! Sin notificaciones ni alertas pendientes.</p>
+            </div>
+
+            <div class="notif-footer" (click)="navigateTo('/productos'); showNotificationsPanel = false">
+              Ir al Inventario de Productos
+            </div>
+          </div>
+        </div>
+
+        <!-- User Profile Pill -->
+        <div class="user-header-pill">
+          <div class="header-avatar">
+            {{ currentUser?.nombre?.substring(0, 1) | uppercase }}
+          </div>
+          <span class="header-username">{{ currentUser?.nombre }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Navigation Bar (< 768px) -->
+  <nav class="app-bottom-nav" *ngIf="isLoggedIn">
+    <a routerLink="/dashboard" routerLinkActive="active" class="bottom-nav-item">
+      <i class="pi pi-compass"></i>
+      <span>Dashboard</span>
+    </a>
+
+    <a routerLink="/productos" routerLinkActive="active" class="bottom-nav-item">
+      <div class="bottom-icon-wrapper">
+        <i class="pi pi-box"></i>
+        <span class="bottom-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+      </div>
+      <span>Productos</span>
+    </a>
+
+    <a routerLink="/compra" routerLinkActive="active" class="bottom-nav-item" *ngIf="hasRole(Role.ADMIN)">
+      <i class="pi pi-shopping-bag"></i>
+      <span>Compras</span>
+    </a>
+
+    <a routerLink="/reportes" routerLinkActive="active" class="bottom-nav-item" *ngIf="hasRole(Role.ADMIN)">
+      <i class="pi pi-chart-pie"></i>
+      <span>Reportes</span>
+    </a>
+
+    <button type="button" class="bottom-nav-item logout-bottom-btn" (click)="logout()" title="Cerrar Sesión">
+      <i class="pi pi-sign-out"></i>
+      <span>Salir</span>
+    </button>
+  </nav>
+</div>

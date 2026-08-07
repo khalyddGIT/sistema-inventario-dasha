@@ -1,0 +1,276 @@
+<div class="productos-page">
+  <p-toast></p-toast>
+
+  <!-- Header premium -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-titles">
+        <h1 class="page-title">
+          <i class="pi pi-box"></i> Gestión de Productos
+        </h1>
+        <p class="page-subtitle">Control detallado de inventario, stock y vencimientos</p>
+      </div>
+      <button
+        pButton
+        pRipple
+        icon="pi pi-plus"
+        label="Nuevo Producto"
+        (click)="openCreateForm()"
+        class="p-button-raised glow-button btn-add-product">
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Row Cards de Métricas Rápidas -->
+    <div class="metrics-grid">
+      <div class="metric-card clickable" (click)="setStatusFilter('ALL')" [class.active-card]="selectedStatusFilter === 'ALL'">
+        <div class="icon-circle circle-teal">
+          <i class="pi pi-box"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Total Productos</span>
+          <span class="metric-value">{{ totalProductosCount }}</span>
+        </div>
+      </div>
+
+      <div class="metric-card clickable" (click)="setStatusFilter('IN_STOCK')" [class.active-card]="selectedStatusFilter === 'IN_STOCK'">
+        <div class="icon-circle circle-indigo">
+          <i class="pi pi-database"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Stock Total</span>
+          <span class="metric-value">{{ totalStockUnits | number }} u.</span>
+        </div>
+      </div>
+
+      <div class="metric-card clickable" (click)="setStatusFilter('LOW_STOCK')" [class.active-card]="selectedStatusFilter === 'LOW_STOCK'">
+        <div class="icon-circle circle-amber">
+          <i class="pi pi-exclamation-triangle"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Stock Bajo</span>
+          <span class="metric-value">{{ lowStockCount }}</span>
+        </div>
+      </div>
+
+      <div class="metric-card clickable" (click)="setStatusFilter('EXPIRING')" [class.active-card]="selectedStatusFilter === 'EXPIRING'">
+        <div class="icon-circle circle-rose">
+          <i class="pi pi-clock"></i>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Por Vencer / Vencidos</span>
+          <span class="metric-value">{{ expiringCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar de Búsqueda y Filtros Rápidos -->
+    <div class="toolbar-card">
+      <div class="search-box">
+        <i class="pi pi-search search-icon"></i>
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar por producto, código, laboratorio, categoría o lote..."
+          [(ngModel)]="searchTerm"
+          (input)="filterProductos()"
+          class="search-input">
+        <button class="clear-btn" *ngIf="searchTerm" (click)="searchTerm = ''; filterProductos()" title="Limpiar búsqueda">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <!-- Filtros por Píldoras de Estado -->
+      <div class="status-pills">
+        <button [class.active]="selectedStatusFilter === 'ALL'" (click)="setStatusFilter('ALL')">
+          Todos <span class="pill-count">{{ totalProductosCount }}</span>
+        </button>
+        <button [class.active]="selectedStatusFilter === 'IN_STOCK'" (click)="setStatusFilter('IN_STOCK')">
+          <i class="pi pi-check-circle text-emerald"></i> En Stock
+        </button>
+        <button [class.active]="selectedStatusFilter === 'LOW_STOCK'" (click)="setStatusFilter('LOW_STOCK')">
+          <i class="pi pi-exclamation-triangle text-amber"></i> Stock Bajo <span class="pill-count count-amber" *ngIf="lowStockCount > 0">{{ lowStockCount }}</span>
+        </button>
+        <button [class.active]="selectedStatusFilter === 'OUT_OF_STOCK'" (click)="setStatusFilter('OUT_OF_STOCK')">
+          <i class="pi pi-times-circle text-rose"></i> Sin Stock
+        </button>
+        <button [class.active]="selectedStatusFilter === 'EXPIRING'" (click)="setStatusFilter('EXPIRING')">
+          <i class="pi pi-clock text-rose"></i> Vencimientos <span class="pill-count count-rose" *ngIf="expiringCount > 0">{{ expiringCount }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading skeleton -->
+    <div *ngIf="loading" class="loading-skeleton">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]">
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line long"></div>
+      </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div *ngIf="!loading && filteredProductos.length === 0" class="empty-state">
+      <div class="empty-icon-circle">
+        <i class="pi pi-box"></i>
+      </div>
+      <h3>No se encontraron productos</h3>
+      <p *ngIf="searchTerm || selectedStatusFilter !== 'ALL'">Intenta cambiar los filtros o el término de búsqueda</p>
+      <p *ngIf="!searchTerm && selectedStatusFilter === 'ALL'">Comienza registrando tus medicamentos en el sistema</p>
+      <button
+        pButton
+        label="Registrar Producto"
+        icon="pi pi-plus"
+        (click)="openCreateForm()"
+        class="p-button-primary">
+      </button>
+    </div>
+
+    <!-- Tabla de Productos estilizada -->
+    <div *ngIf="!loading && filteredProductos.length > 0" class="table-card">
+      <p-table
+        [value]="filteredProductos"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50, 100]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
+        styleClass="modern-p-table p-datatable-striped"
+        responsiveLayout="scroll">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="codigo" style="width: 85px;">Código <p-sortIcon field="codigo"></p-sortIcon></th>
+            <th pSortableColumn="nombre" style="min-width: 150px;">Producto & Presentación <p-sortIcon field="nombre"></p-sortIcon></th>
+            <th style="width: 115px;">Categoría</th>
+            <th style="width: 135px;">Laboratorio</th>
+            <th style="width: 85px;">Lote</th>
+            <th pSortableColumn="precioVenta" class="text-right" style="width: 105px;">Precio Venta <p-sortIcon field="precioVenta"></p-sortIcon></th>
+            <th pSortableColumn="stockActual" class="text-center" style="width: 95px;">Stock <p-sortIcon field="stockActual"></p-sortIcon></th>
+            <th pSortableColumn="fechaVencimiento" style="width: 115px;">Vencimiento <p-sortIcon field="fechaVencimiento"></p-sortIcon></th>
+            <th class="text-center" style="width: 105px;">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-producto>
+          <tr class="table-row">
+            <!-- Código -->
+            <td>
+              <span class="code-pill font-mono">{{ producto.codigo }}</span>
+            </td>
+
+            <!-- Nombre + Presentación -->
+            <td>
+              <div class="product-info-cell">
+                <span class="product-name">{{ producto.nombre }}</span>
+                <span class="product-meta" *ngIf="producto.presentacion">
+                  <i class="pi pi-tag text-xs mr-1"></i>{{ producto.presentacion }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Categoría -->
+            <td>
+              <span class="badge-category">{{ producto.categoria?.nombre || '-' }}</span>
+            </td>
+
+            <!-- Laboratorio -->
+            <td>
+              <span class="badge-lab">{{ producto.laboratorio?.nombre || '-' }}</span>
+            </td>
+
+            <!-- Lote -->
+            <td>
+              <span class="badge-lote font-mono">{{ producto.lote || '-' }}</span>
+            </td>
+
+            <!-- Precio Venta -->
+            <td class="text-right">
+              <div class="price-cell">
+                <span class="price-val">S/. {{ producto.precioVenta | number:'1.2-2' }}</span>
+                <span class="price-cost" *ngIf="producto.precioCompra" title="Precio Compra">
+                  C: S/. {{ producto.precioCompra | number:'1.2-2' }}
+                </span>
+              </div>
+            </td>
+
+            <!-- Stock Actual & Alerta -->
+            <td class="text-center">
+              <div class="stock-cell">
+                <span [class]="'stock-badge ' + getStockClass(producto)">
+                  <i [class]="getStockIcon(producto)"></i>
+                  {{ producto.stockActual }} u.
+                </span>
+                <span class="stock-min-text">Mín: {{ producto.stockMinimo }}</span>
+              </div>
+            </td>
+
+            <!-- Fecha Vencimiento -->
+            <td>
+              <div class="date-cell" [class.date-expired]="isExpired(producto)" [class.date-warning]="isExpiringSoon(producto)">
+                <span class="date-val">
+                  {{ producto.fechaVencimiento ? (producto.fechaVencimiento | date:'dd/MM/yyyy') : 'Sin fecha' }}
+                </span>
+                <span class="date-status" *ngIf="isExpired(producto)">Vencido</span>
+                <span class="date-status" *ngIf="!isExpired(producto) && isExpiringSoon(producto)">Por vencer</span>
+              </div>
+            </td>
+
+            <!-- Botones de Acción -->
+            <td class="text-center">
+              <div class="action-buttons">
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-pencil"
+                  (click)="openEditForm(producto)"
+                  class="p-button-rounded p-button-text p-button-warning p-button-sm"
+                  pTooltip="Editar"
+                  tooltipPosition="top">
+                </button>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-copy"
+                  (click)="duplicateProducto(producto)"
+                  class="p-button-rounded p-button-text p-button-info p-button-sm"
+                  pTooltip="Duplicar"
+                  tooltipPosition="top">
+                </button>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-trash"
+                  (click)="deleteProducto(producto.id!)"
+                  class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                  pTooltip="Eliminar"
+                  tooltipPosition="top">
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <!-- Modal del formulario -->
+  <p-dialog
+    [header]="editingProducto ? 'Editar Producto' : 'Nuevo Producto'"
+    [(visible)]="showForm"
+    [modal]="true"
+    [style]="{ width: '95vw', 'max-width': '1050px' }"
+    [maximizable]="true"
+    [closable]="true"
+    styleClass="product-dialog"
+    (onHide)="cancelForm()">
+
+    <app-producto-form
+      [producto]="productoForm"
+      [isEditing]="!!editingProducto"
+      (save)="onProductoSaved()"
+      (cancel)="cancelForm()">
+    </app-producto-form>
+  </p-dialog>
+</div>
