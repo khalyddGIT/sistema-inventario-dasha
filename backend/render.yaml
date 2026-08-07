@@ -1,0 +1,18 @@
+type: web
+name: sistema-inventario-backend
+env: docker
+dockerfilePath: ./Dockerfile
+dockerContext: .
+region: oregon
+plan: free
+envVars:
+  - key: DATABASE_URL
+    value: jdbc:postgresql://db.ztodsqhbjxldkzvqqjep.supabase.co:5432/postgres
+  - key: DATABASE_USERNAME
+    value: postgres
+  - key: DATABASE_PASSWORD
+    sync: false
+  - key: JPA_DIALECT
+    value: org.hibernate.dialect.PostgreSQLDialect
+  - key: SPRING_PROFILES_ACTIVE
+    value: prod
