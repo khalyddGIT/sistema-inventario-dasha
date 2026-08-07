@@ -7,11 +7,11 @@ region: oregon
 plan: free
 envVars:
   - key: DATABASE_URL
-    value: jdbc:postgresql://db.ztodsqhbjxldkzvqqjep.supabase.co:5432/postgres
+    value: jdbc:postgresql://db.ygznguviubojlbanpqqi.supabase.co:5432/postgres
   - key: DATABASE_USERNAME
     value: postgres
   - key: DATABASE_PASSWORD
-    sync: false
+    value: DashaControl2026!
   - key: JPA_DIALECT
     value: org.hibernate.dialect.PostgreSQLDialect
   - key: SPRING_PROFILES_ACTIVE
