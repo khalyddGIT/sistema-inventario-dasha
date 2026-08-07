@@ -1,8 +1,8 @@
 type: web
 name: sistema-inventario-backend
 env: docker
-dockerfilePath: ./Dockerfile
-dockerContext: .
+dockerfilePath: ./backend/Dockerfile
+dockerContext: ./backend
 region: oregon
 plan: free
 envVars:
