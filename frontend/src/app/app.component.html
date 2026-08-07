@@ -183,7 +183,7 @@
       <div class="header-actions">
         <!-- Interactive Notification Bell Button -->
         <div class="notification-container">
-          <button class="notification-btn" (click)="toggleNotifications()" title="Ver Notificaciones">
+          <button type="button" class="notification-btn" [class.active]="showNotificationsPanel" (click)="toggleNotifications()" title="Ver Notificaciones">
             <i class="pi pi-bell"></i>
             <span class="notification-badge-count" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
           </button>
@@ -191,12 +191,12 @@
           <!-- Floating Notification Panel Dropdown -->
           <div class="notifications-dropdown-panel" *ngIf="showNotificationsPanel">
             <div class="notif-header">
-              <div>
-                <h4>Notificaciones</h4>
-                <span class="notif-sub">{{ unreadCount }} no leídas</span>
+              <div class="notif-title-row">
+                <span class="notif-header-title">Notificaciones</span>
+                <span class="notif-count-badge" *ngIf="unreadCount > 0">{{ unreadCount }} nuevas</span>
               </div>
-              <button class="btn-read-all" (click)="markAllNotificationsRead()" *ngIf="unreadCount > 0">
-                Marcar leídas
+              <button type="button" class="btn-read-all" (click)="markAllNotificationsRead()" *ngIf="unreadCount > 0" title="Marcar todas como leídas">
+                <i class="pi pi-check"></i> Marcar leídas
               </button>
             </div>
 
@@ -212,20 +212,27 @@
                   <i class="pi {{ notif.icon }}"></i>
                 </div>
                 <div class="notif-content">
-                  <span class="notif-title">{{ notif.title }}</span>
+                  <div class="notif-top">
+                    <span class="notif-title">{{ notif.title }}</span>
+                    <span class="notif-time">{{ notif.time }}</span>
+                  </div>
                   <p class="notif-detail">{{ notif.detail }}</p>
-                  <span class="notif-time">{{ notif.time }}</span>
                 </div>
+                <div class="notif-unread-indicator" *ngIf="!notif.read"></div>
               </div>
             </div>
 
             <div class="empty-notif" *ngIf="notifications.length === 0">
-              <i class="pi pi-check-circle text-emerald"></i>
-              <p>¡Todo en orden! Sin notificaciones ni alertas pendientes.</p>
+              <div class="empty-notif-icon">
+                <i class="pi pi-bell-slash"></i>
+              </div>
+              <h5>Sin notificaciones pendientes</h5>
+              <p>Todo está al día. Te avisaremos cuando existan alertas de productos o stock.</p>
             </div>
 
             <div class="notif-footer" (click)="navigateTo('/productos'); showNotificationsPanel = false">
-              Ir al Inventario de Productos
+              <span>Ir al Inventario de Productos</span>
+              <i class="pi pi-arrow-right"></i>
             </div>
           </div>
         </div>

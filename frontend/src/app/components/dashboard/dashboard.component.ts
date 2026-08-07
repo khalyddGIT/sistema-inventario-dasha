@@ -115,6 +115,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.chartOptions = {
       responsive: true,
       maintainAspectRatio: false,
+      resizeDelay: 100,
       plugins: {
         legend: {
           display: false
@@ -135,7 +136,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
           },
           ticks: {
             color: '#64748b',
-            font: { size: 11, weight: '500' }
+            font: { size: 10, weight: '500' },
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 7
           }
         },
         y: {
@@ -144,7 +148,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
           },
           ticks: {
             color: '#64748b',
-            font: { size: 11, weight: '500' }
+            font: { size: 10, weight: '500' },
+            maxTicksLimit: 5
           }
         }
       }
