@@ -1,6 +1,7 @@
 package com.inventario.inventory.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,12 +43,12 @@ public class Producto {
     // RELACIONES - AQUÍ ESTÁ LA SOLUCIÓN MÁGICA
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")
-    @JsonIdentityReference(alwaysAsId = true)  // ← Permite recibir solo { "id": 1 }
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Categoria categoria;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "laboratorio_id")
-    @JsonIdentityReference(alwaysAsId = true)  // ← Permite recibir solo { "id": 2 }
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Laboratorio laboratorio;
 
     // CONSTRUCTORES

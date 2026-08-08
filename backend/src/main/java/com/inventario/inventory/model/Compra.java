@@ -1,6 +1,7 @@
 package com.inventario.inventory.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,11 +20,13 @@ public class Compra {
     private BigDecimal total;
     
     // Relationships
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "proveedor_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Proveedor proveedor;
     
     @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"compra", "hibernateLazyInitializer", "handler"})
     private List<DetalleCompra> detalles;
     
     // Constructors
