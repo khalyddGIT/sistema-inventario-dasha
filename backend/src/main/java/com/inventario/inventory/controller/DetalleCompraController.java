@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/detalles-compra")
-@CrossOrigin(origins = "*")
 public class DetalleCompraController {
     
     @Autowired
