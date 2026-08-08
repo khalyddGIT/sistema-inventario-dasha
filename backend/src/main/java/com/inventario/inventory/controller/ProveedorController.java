@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/proveedores")
-@CrossOrigin(origins = "http://localhost:4200") // In production, specify your frontend URL
+@CrossOrigin(origins = "*")
 public class ProveedorController {
     
     @Autowired
